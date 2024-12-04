@@ -1,0 +1,65 @@
+name: Deploy Website Artificat section
+on:
+    push:
+        branches:
+            -   master
+jobs:
+    test:
+        runs-on: ubuntu-latest
+        steps:
+            -   name: Get Code
+                uses: actions/checkout@v4
+            -   name: Cache Dependecies
+                uses: actions/cache@v4
+                with:
+                    path: ~/.npm
+                    key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+            -   name: Install Dependencies
+                run: npm ci
+            -   name: lint
+                run: npm run lint
+            -   name: Test
+                run: npm test
+            -   name: Build
+                run: npm run
+            
+    build:
+        needs: test
+        runs-on: ubuntu-latest
+        steps:
+            -   name: Get Code
+                uses: actions/checkout@v4
+            -   name: Cache Dependecies
+                uses: actions/cache@v4
+                with:
+                    path: ~/.npm
+                    key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+            -   name: Install Dependencies
+                run: npm ci
+            -   name: Build
+                run: npm run
+            -   name: publish js filename
+                id: publish
+                run: find dist/assets/*.js -type f -execdir echo 'script-file={}' >> $GITHUB_OUTPUT ';'
+            -   name: upload artifacts
+                uses: actions/upload-artifact@v4
+                with:
+                    name: dist-file
+                    path: dist
+                    # path: |
+                        # dist
+                        # package.json
+    deploy:
+        needs: build
+        runs-on: ubuntu-latest
+        steps:
+            -   name: Get build artifacts
+                uses: actions/download-artifact@v4
+                with:
+                    name: dist-file
+            -   name: output contents
+                run: ls
+            -   name: output filename
+                run: echo "${{ needs.build.outputs.script-file }}"
+            -   name: Deploy
+                run: echo "Deploying ..."
