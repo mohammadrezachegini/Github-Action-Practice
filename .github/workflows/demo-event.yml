@@ -15,7 +15,9 @@ on:
             -   'feat/*'
             # -   'bugfix/*'
         paths-ignore:
-            -   '.github/workflows/*'
+            -   '.github/workflows/output.yml'
+            -   '.github/workflows/deployment.yml'
+
 
 jobs:
     deploy:
